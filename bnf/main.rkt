@@ -66,7 +66,7 @@
      #'(begin
          def-struct ...
          def-union))
-   (printf "~a~n" (pretty-write (syntax->datum gen)))
+   ;(printf "~a~n" (pretty-write (syntax->datum gen)))
    gen])
 
 ;; Define type `t` along with predicate `t?`
