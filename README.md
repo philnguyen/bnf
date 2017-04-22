@@ -13,7 +13,7 @@ raco pkg install bnf
 
 Defining syntax of λ-calculus terms `e` with based type `Number` and
 meta-function `fv` computing its free variables:
-```{racket}
+```racket
 (e . ::= . (Lam x e)
            (App e e)
            x
@@ -35,7 +35,7 @@ meta-function `fv` computing its free variables:
 You can specify existing type with identifiers or quoted datum, or `[#:old Type]`.
 In the example below, the macro would generate new struct `Pairof` without
 the `#:old` declaration.
-```{racket}
+```racket
 (Tree . ::= . 'nil [#:old (Pairof Tree Tree)])
 
 (: height : Tree → Natural)
