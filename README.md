@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/philnguyen/z3-rkt.svg?branch=master)](https://travis-ci.org/philnguyen/bnf) bnf
+[![Build Status](https://travis-ci.org/philnguyen/bnf.svg?branch=master)](https://travis-ci.org/philnguyen/bnf) bnf
 =========================================
 
 Concise Typed Racket syntax for declaring data in BNF.
@@ -14,6 +14,8 @@ raco pkg install bnf
 Defining syntax of λ-calculus terms `e` with based type `Number` and
 meta-function `fv` computing its free variables:
 ```racket
+#lang typed/racket/base
+(require racket/match racket/set bnf)
 (e . ::= . (Lam x e)
            (App e e)
            x
@@ -36,6 +38,8 @@ You can specify existing type with identifiers or quoted datum, or `[#:old Type]
 In the example below, the macro would generate new struct `Pairof` without
 the `#:old` declaration.
 ```racket
+#lang typed/racket/base
+(require racket/match bnf)
 (Tree . ::= . 'nil [#:old (Pairof Tree Tree)])
 
 (: height : Tree → Natural)
