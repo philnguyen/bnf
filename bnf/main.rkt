@@ -55,6 +55,10 @@
         [t #'t]))))
 
 (define-syntax-parser ::=
+  [(t:id . _ . (k:id f ...))
+   #:when (free-identifier=? #'t #'k)
+   (define/with-syntax (fld ...) (parse-fields #'(f ...)))
+   #'(struct k (fld ...) #:transparent)]
   [(LHS:id . _ . RHS:rhs ...)
    (define/with-syntax (def-struct ...) (gen-def-structs #'(RHS ...)))
    (define/with-syntax def-union

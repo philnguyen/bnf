@@ -47,3 +47,10 @@
     [(cons l r) (+ 1 (max (height l) (height r)))]))
 
 (check-equal? (height (cons (cons 'nil 'nil) 'nil)) 2)
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;; Trivial
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(Person . ::= . (Person [name : String] [age : Natural]))
