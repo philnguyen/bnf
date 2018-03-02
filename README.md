@@ -34,13 +34,13 @@ meta-function `fv` computing its free variables:
 (fv (Lam 'x 'y)) ; ==> (set 'y)
 ```
 
-You can specify existing type with identifiers or quoted datum, or `[#:old Type]`.
+You can specify existing type with identifiers or quoted datum, or `[#:reuse Type]`.
 In the example below, the macro would generate new struct `Pairof` without
-the `#:old` declaration.
+the `#:reuse` declaration.
 ```racket
 #lang typed/racket/base
 (require racket/match bnf)
-(Tree . ::= . 'nil [#:old (Pairof Tree Tree)])
+(Tree . ::= . 'nil [#:reuse (Pairof Tree Tree)])
 
 (: height : Tree → Natural)
 (define height

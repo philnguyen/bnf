@@ -38,7 +38,7 @@
 ;;;;; Binary tree
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(Tree . ::= . 'nil [#:old (Pairof Tree Tree)])
+(Tree . ::= . 'nil [#:reuse (Pairof Tree Tree)])
 
 (: height : Tree → Natural)
 (define height

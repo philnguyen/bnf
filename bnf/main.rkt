@@ -19,7 +19,7 @@
     (pattern _:str)
     (pattern _:number)
     (pattern _:char)
-    (pattern [#:old _]) ; prevent generating new types, e.g. (Pairof _ _), (Listof _), etc.
+    (pattern [#:reuse _]) ; prevent generating new types, e.g. (Pairof _ _), (Listof _), etc.
     (pattern (s:id _ ...)))
 
   (define (in-syntax-list x) (in-list (syntax->list x)))
@@ -51,7 +51,7 @@
         #:literals (quote)
         [(quote v) #''v]
         [(s:id _ ...) #'s]
-        [(#:old t) #'t]
+        [(#:reuse t) #'t]
         [t #'t]))))
 
 (define-syntax-parser ::=
