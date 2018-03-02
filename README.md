@@ -16,11 +16,9 @@ meta-function `fv` computing its free variables:
 ```racket
 #lang typed/racket/base
 (require racket/match racket/set bnf)
-(e . ::= . (Lam x e)
-           (App e e)
-           x
-           Number)
+(e . ::= . ℤ x (Lam x e) (App e e))
 (x . ::= . Symbol)
+(ℤ . ::= . Integer)
 
 (: fv : e → (Setof x))
 (define fv
@@ -28,7 +26,7 @@ meta-function `fv` computing its free variables:
     [(Lam x e*) (set-remove (fv e*) x)]
     [(App e₁ e₂) (set-union (fv e₁) (fv e₂))]
     [(? x? x) {set x}]
-    [(? number?) {set}]))
+    [(? ℤ?) {set}]))
 
 (fv (App (Lam 'x (App 'x 'x)) (Lam 'y (App 'y 'y)))) ; ==> (set)
 (fv (Lam 'x 'y)) ; ==> (set 'y)

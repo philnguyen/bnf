@@ -4,6 +4,7 @@
          (rename-out [::= ⩴]))
 
 (require (for-syntax racket/base
+                     racket/list
                      racket/match
                      racket/syntax
                      syntax/parse
@@ -13,65 +14,46 @@
 (begin-for-syntax
   (define-syntax-class rhs
     #:description "right-hand side of BNF rule"
-    (pattern _:id)
-    (pattern ((~literal quote) _))
-    (pattern _:boolean)
-    (pattern _:str)
-    (pattern _:number)
-    (pattern _:char)
-    (pattern [#:reuse _]) ; prevent generating new types, e.g. (Pairof _ _), (Listof _), etc.
-    (pattern (s:id _ ...)))
-
-  (define (in-syntax-list x) (in-list (syntax->list x)))
+    #:attributes (name def)
+    (pattern x:id
+             #:attr name #'x
+             #:attr def #f)
+    (pattern ((~literal quote) v)
+             #:attr name #''v
+             #:attr def #f)
+    (pattern (~or v:boolean v:str v:number v:char)
+             #:attr name #''v
+             #:attr def #f)
+    (pattern (s:id f ...)
+             #:attr name #'s
+             #:attr def
+             (with-syntax ([(fld ...) (parse-fields #'(f ...))])
+               #'(struct s (fld ...) #:transparent)))
+    ;; prevent generating new types, e.g. (Pairof _ _), (Listof _), etc.
+    (pattern [#:reuse t]
+             #:attr name #'t
+             #:attr def #f))
 
   (define (parse-fields stx)
-    (for/list ([fᵢ (in-syntax-list stx)] [i (in-naturals)])
+    (for/list ([(fᵢ i) (in-indexed (syntax->list stx))])
       (syntax-parse fᵢ
         [(_:id (~literal :) _) fᵢ]
-        [tᵢ (define/with-syntax xᵢ (format-id #'t "_~a" i))
-            #'(xᵢ : tᵢ)])))
-
-  (define (gen-def-structs rhs)
-    (for*/list ([rhs (in-syntax-list rhs)]
-                [?def
-                 (in-value
-                  (syntax-parse rhs
-                    #:literals (quote)
-                    [(quote _) #f]
-                    [(s:id f ...)
-                     (define/with-syntax (fld ...) (parse-fields #'(f ...)))
-                     #'(struct s (fld ...) #:transparent)]
-                    [_ #f]))]
-                #:when ?def)
-      ?def))
-  
-  (define (extract-rhs-names rhs)
-    (for/list ([rhs (in-syntax-list rhs)])
-      (syntax-parse rhs
-        #:literals (quote)
-        [(quote v) #''v]
-        [(s:id _ ...) #'s]
-        [(#:reuse t) #'t]
-        [t #'t]))))
+        [tᵢ (with-syntax ([xᵢ (format-id #'t "_~a" i)])
+              #'(xᵢ : tᵢ))])))
+  )
 
 (define-syntax-parser ::=
-  [(t:id . _ . (k:id f ...))
+  [(t:id . _ . (~and RHS:rhs (k:id f ...)))
    #:when (free-identifier=? #'t #'k)
-   (define/with-syntax (fld ...) (parse-fields #'(f ...)))
-   #'(struct k (fld ...) #:transparent)]
+   #'RHS.def]
   [(LHS:id . _ . RHS:rhs ...)
-   (define/with-syntax (def-struct ...) (gen-def-structs #'(RHS ...)))
-   (define/with-syntax def-union
-     (syntax-parse (extract-rhs-names #'(RHS ...))
-       [(     ) #'(define-type/pred LHS Nothing  )]
-       [(t    ) #'(define-type/pred LHS t        )]
-       [(t ...) #'(define-type/pred LHS (U t ...))]))
-   (define gen
+   (with-syntax ([(def-struct ...)
+                  (filter-map
+                   (syntax-parser [r:rhs (attribute r.def)])
+                   (syntax->list #'(RHS ...)))])
      #'(begin
          def-struct ...
-         def-union))
-   ;(printf "~a~n" (pretty-write (syntax->datum gen)))
-   gen])
+         (define-type/pred LHS (U RHS.name ...))))])
 
 ;; Define type `t` along with predicate `t?`
 (define-syntax (define-type/pred stx)

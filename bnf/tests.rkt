@@ -9,11 +9,9 @@
 ;;;;; λ-calculus
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(e . ::= . (Lam x e)
-           (App e e)
-           x
-           Number)
+(e . ::= . ℤ x (Lam x e) (App e e))
 (x . ::= . Symbol)
+(ℤ . ::= . Integer)
 
 (: fv : e → (Setof x))
 (define fv
@@ -21,7 +19,7 @@
     [(Lam x e*) (set-remove (fv e*) x)]
     [(App e₁ e₂) (set-union (fv e₁) (fv e₂))]
     [(? x? x) {set x}]
-    [(? number?) {set}]))
+    [(? ℤ?) {set}]))
 
 (define tt (Lam 'x (Lam 'y 'x)))
 (define ff (Lam 'x (Lam 'y 'y)))
