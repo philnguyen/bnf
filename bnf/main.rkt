@@ -1,7 +1,8 @@
 #lang typed/racket/base
 
 (provide ::=
-         (rename-out [::= ⩴]))
+         (rename-out [::= ⩴])
+         define-substructs)
 
 (require (for-syntax racket/base
                      racket/list
@@ -27,19 +28,24 @@
     (pattern (s:id f ...)
              #:attr name #'s
              #:attr def
-             (with-syntax ([(fld ...) (parse-fields #'(f ...))])
-               #'(struct s (fld ...) #:transparent)))
+             (syntax-parse #'(f ...)
+               [fs:flds
+                (with-syntax ([(fld ...) (attribute fs.gen)])
+                  #'(struct s (fld ...) #:transparent))]))
     ;; prevent generating new types, e.g. (Pairof _ _), (Listof _), etc.
     (pattern [#:reuse t]
              #:attr name #'t
              #:attr def #f))
-
-  (define (parse-fields stx)
-    (for/list ([(fᵢ i) (in-indexed (syntax->list stx))])
-      (syntax-parse fᵢ
-        [(_:id (~literal :) _) fᵢ]
-        [tᵢ (with-syntax ([xᵢ (format-id #'t "_~a" i)])
-              #'(xᵢ : tᵢ))])))
+  (define-syntax-class flds
+    #:description "field list description"
+    #:attributes (gen)
+    (pattern (f ...)
+             #:attr gen
+             (for/list ([(f i) (in-indexed (syntax->list #'(f ...)))])
+               (syntax-parse f
+                 [(_:id (~literal :) _) f]
+                 [t (with-syntax ([x (format-id #'t "_~a" i)])
+                      #'(x : t))]))))
   )
 
 (define-syntax-parser ::=
@@ -54,6 +60,15 @@
      #'(begin
          def-struct ...
          (define-type/pred LHS (U RHS.name ...))))])
+
+(define-syntax define-substructs
+  (syntax-parser
+    [(_ T:id (K:id f ...) ...)
+     (syntax-parse #'((f ...) ...)
+       [(fs:flds ...)
+        (with-syntax ([((f* ...) ...) (attribute fs.gen)])
+          #'(begin
+            (struct K T (f* ...) #:transparent) ...))])]))
 
 ;; Define type `t` along with predicate `t?`
 (define-syntax (define-type/pred stx)
