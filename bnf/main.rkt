@@ -2,6 +2,7 @@
 
 (provide ::=
          (rename-out [::= ⩴])
+         (rename-out [define-type ≜])
          define-substructs)
 
 (require (for-syntax racket/base
