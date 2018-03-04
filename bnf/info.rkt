@@ -4,7 +4,8 @@
 
 (define deps '("base"
                "typed-racket-lib"
-               "typed-racket-more"))
+               "typed-racket-more"
+               "typed-struct-props"))
 
 (define pkg-desc "Macro for declaring data in BNF")
 

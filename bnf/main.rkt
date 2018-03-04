@@ -11,6 +11,7 @@
                      racket/syntax
                      syntax/parse
                      racket/pretty)
+         typed-struct-props
          syntax/parse/define)
 
 (begin-for-syntax
@@ -32,7 +33,19 @@
              (syntax-parse #'(f ...)
                [fs:flds
                 (with-syntax ([(fld ...) (attribute fs.gen)])
-                  #'(struct s (fld ...) #:transparent))]))
+                  #`(struct/props s (fld ...) #:transparent
+                                  #:property prop:custom-write
+                                  (λ (this o _)
+                                    (fprintf o "(")
+                                    (write 's o)
+                                    #,@(map (syntax-parser
+                                              [(f _ _)
+                                               (with-syntax ([s-f (format-id #'f "~a-~a" #'s #'f)])
+                                                 #'(begin
+                                                     (fprintf o " ")
+                                                     (print (s-f this) o)))])
+                                            (syntax->list #'(fld ...)))
+                                    (fprintf o ")"))))]))
     ;; prevent generating new types, e.g. (Pairof _ _), (Listof _), etc.
     (pattern [#:reuse t]
              #:attr name #'t

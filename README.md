@@ -48,3 +48,6 @@ the `#:reuse` declaration.
 
 (height (cons (cons 'nil 'nil) 'nil)) ; ==> 2
 ```
+
+The `::=` form also generates a predicate for the type (suffixed with `?`).
+This means that `#:reuse` will not work on a type with no first-order check.
