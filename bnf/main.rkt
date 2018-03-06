@@ -11,8 +11,26 @@
                      racket/syntax
                      syntax/parse
                      racket/pretty)
+         racket/string
+         racket/pretty
+         typed/racket/unsafe
          typed-struct-props
          syntax/parse/define)
+
+(unsafe-require/typed racket/struct
+  [make-constructor-style-printer
+   (∀ (A) ((A → (U Symbol String))
+           (A → (Listof Any))
+           → A Output-Port (U #t #f 0 1) → Void))]
+  [struct->list (∀ (A) (A → (Listof Any)))])
+
+(define-syntax-rule (struct* K args ...)
+  (struct/props K args ...
+                #:transparent
+                #:property prop:custom-write
+                ((inst make-constructor-style-printer K)
+                 (λ (_) 'K)
+                 struct->list)))
 
 (begin-for-syntax
   (define-syntax-class rhs
@@ -33,19 +51,7 @@
              (syntax-parse #'(f ...)
                [fs:flds
                 (with-syntax ([(fld ...) (attribute fs.gen)])
-                  #`(struct/props s (fld ...) #:transparent
-                                  #:property prop:custom-write
-                                  (λ (this o _)
-                                    (fprintf o "(")
-                                    (write 's o)
-                                    #,@(map (syntax-parser
-                                              [(f _ _)
-                                               (with-syntax ([s-f (format-id #'f "~a-~a" #'s #'f)])
-                                                 #'(begin
-                                                     (fprintf o " ")
-                                                     (print (s-f this) o)))])
-                                            (syntax->list #'(fld ...)))
-                                    (fprintf o ")"))))]))
+                  #`(struct* s (fld ...)))]))
     ;; prevent generating new types, e.g. (Pairof _ _), (Listof _), etc.
     (pattern [#:reuse t]
              #:attr name #'t
@@ -80,8 +86,7 @@
                (define mk-t (ann cons (T₁ T₂ → t)))
                (define t-x₁ (ann car (t → T₁)))
                (define t-x₂ (ann cdr (t → T₂)))))])])]
-  [(t:id . _ . #:TBD)
-   #'(struct t () #:transparent)]
+  [(t:id . _ . #:TBD) #'(struct* t ())]
   [(LHS:id . _ . RHS:rhs ...)
    (with-syntax ([(def-struct ...)
                   (filter-map
@@ -97,8 +102,7 @@
      (syntax-parse #'((f ...) ...)
        [(fs:flds ...)
         (with-syntax ([((f* ...) ...) (attribute fs.gen)])
-          #'(begin
-            (struct K T (f* ...) #:transparent) ...))])]))
+          #'(begin (struct* K T (f* ...)) ...))])]))
 
 ;; Define type `t` along with predicate `t?`
 (define-syntax (define-type/pred stx)
