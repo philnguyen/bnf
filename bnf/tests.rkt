@@ -61,3 +61,14 @@
 (define-substructs Person
   [Dog [id : String]]
   [Cat String Number])
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;; Ad-hoc pair
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(Binding . ::= . (Binding [name : Symbol] Integer) #:ad-hoc)
+(define b (mk-Binding 'x 42))
+(check-equal? b (cons 'x 42))
+(check-equal? (Binding-name b) 'x)
+(check-equal? (Binding-_1 b) 42)
