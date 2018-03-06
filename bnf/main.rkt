@@ -80,6 +80,8 @@
                (define mk-t (ann cons (T₁ T₂ → t)))
                (define t-x₁ (ann car (t → T₁)))
                (define t-x₂ (ann cdr (t → T₂)))))])])]
+  [(t:id . _ . #:TBD)
+   #'(struct t () #:transparent)]
   [(LHS:id . _ . RHS:rhs ...)
    (with-syntax ([(def-struct ...)
                   (filter-map
