@@ -45,6 +45,21 @@
     (pattern (~or v:boolean v:str v:number v:char)
              #:attr name #''v
              #:attr def #f)
+    (pattern (t:id f₁ f₂ #:ad-hoc)
+             #:attr name #'t
+             #:attr def
+             (syntax-parse #'(f₁ f₂)
+               [f:flds
+                (syntax-parse (attribute f.gen)
+                  [([x₁ _ T₁] [x₂ _ T₂])
+                   (with-syntax ([t-x₁ (format-id #'x₁ "~a-~a" #'t #'x₁)]
+                                 [t-x₂ (format-id #'x₂ "~a-~a" #'t #'x₂)]
+                                 [mk-t (format-id #'t  "mk-~a" #'t)])
+                     #'(begin
+                         (define-type t (Pairof T₁ T₂))
+                         (define mk-t (ann cons (T₁ T₂ → t)))
+                         (define t-x₁ (ann car (t → T₁)))
+                         (define t-x₂ (ann cdr (t → T₂)))))])]))
     (pattern (s:id f ...)
              #:attr name #'s
              #:attr def
@@ -72,20 +87,6 @@
   [(t:id . _ . (~and RHS:rhs (k:id f ...)))
    #:when (free-identifier=? #'t #'k)
    #'RHS.def]
-  [(t:id . _ . (k:id f₁ f₂) #:ad-hoc)
-   #:when (free-identifier=? #'t #'k)
-   (syntax-parse #'(f₁ f₂)
-     [f:flds
-      (syntax-parse (attribute f.gen)
-        [([x₁ _ T₁] [x₂ _ T₂])
-         (with-syntax ([t-x₁ (format-id #'x₁ "~a-~a" #'t #'x₁)]
-                       [t-x₂ (format-id #'x₂ "~a-~a" #'t #'x₂)]
-                       [mk-t (format-id #'t  "mk-~a" #'t)])
-           #'(begin
-               (define-type t (Pairof T₁ T₂))
-               (define mk-t (ann cons (T₁ T₂ → t)))
-               (define t-x₁ (ann car (t → T₁)))
-               (define t-x₂ (ann cdr (t → T₂)))))])])]
   [(t:id . _ . #:TBD) #'(struct* t ())]
   [(LHS:id . _ . RHS:rhs ...)
    (with-syntax ([(def-struct ...)

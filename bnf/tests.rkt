@@ -67,10 +67,19 @@
 ;;;;; Ad-hoc pair
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(Binding . ::= . (Binding [name : Symbol] Integer) #:ad-hoc)
+(Binding . ::= . (Binding [name : Symbol] Integer #:ad-hoc))
 (define b (mk-Binding 'x 42))
 (check-equal? b (cons 'x 42))
 (check-equal? (Binding-name b) 'x)
 (check-equal? (Binding-_1 b) 42)
 
 (Address . ::= . #:TBD)
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;; Ad-hoc pair 2
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; Weird linked list reusing `cons` and using `#f` as empty
+(My-List . ::= . (My-Cons Integer My-List #:ad-hoc) #f)
+(mk-My-Cons 1 (mk-My-Cons 2 #f))
