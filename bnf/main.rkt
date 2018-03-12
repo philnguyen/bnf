@@ -63,10 +63,16 @@
     (pattern (s:id f ...)
              #:attr name #'s
              #:attr def
-             (syntax-parse #'(f ...)
-               [fs:flds
-                (with-syntax ([(fld ...) (attribute fs.gen)])
-                  #`(struct* s (fld ...)))]))
+             (let-values ([(fs mut?)
+                           (syntax-parse #'(f ...)
+                             [(f ... #:mutable) (values #'(f ...) #t)]
+                             [_                 (values #'(f ...) #f)])])
+               (syntax-parse fs
+                 [fs:flds
+                  (with-syntax ([(fld ...) (attribute fs.gen)])
+                    (if mut?
+                        #'(struct* s (fld ...) #:mutable)
+                        #'(struct* s (fld ...))))])))
     ;; prevent generating new types, e.g. (Pairof _ _), (Listof _), etc.
     (pattern [#:reuse t]
              #:attr name #'t
