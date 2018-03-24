@@ -83,3 +83,8 @@
 ;; Weird linked list reusing `cons` and using `#f` as empty
 (My-List . ::= . (My-Cons Integer My-List #:ad-hoc) #f)
 (mk-My-Cons 1 (mk-My-Cons 2 #f))
+
+(My-Function-Pair . ≜ . (mk-pair (Integer → String) (Integer → Symbol)) #:ad-hoc)
+(define p (mk-pair number->string (compose1 string->symbol number->string)))
+(check-equal? ((My-Function-Pair-_0 p) 42) "42")
+(check-equal? ((My-Function-Pair-_1 p) 42) '|42|)

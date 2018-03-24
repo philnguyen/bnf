@@ -1,8 +1,8 @@
 #lang typed/racket/base
 
 (provide ::=
+         ≜
          (rename-out [::= ⩴])
-         (rename-out [define-type ≜])
          define-substructs)
 
 (require (for-syntax racket/base
@@ -33,6 +33,22 @@
                  struct->list)))
 
 (begin-for-syntax
+  (define (gen-ad-hoc-pair-defns t k f₁ f₂)
+    (syntax-parse #`(#,f₁ #,f₂)
+      [f:flds
+       (syntax-parse (attribute f.gen)
+         [([x₁ _ T₁] [x₂ _ T₂])
+          (with-syntax ([t-x₁ (format-id #'x₁ "~a-~a" t #'x₁)]
+                        [t-x₂ (format-id #'x₂ "~a-~a" t #'x₂)]
+                        [mk-t (if (free-identifier=? t k)
+                                  (format-id t  "mk-~a" t)
+                                  k)])
+            #`(begin
+                (define-type #,t (Pairof T₁ T₂))
+                (define mk-t (ann cons (T₁ T₂ → #,t)))
+                (define t-x₁ (ann car (#,t → T₁)))
+                (define t-x₂ (ann cdr (#,t → T₂)))))])]))
+  
   (define-syntax-class rhs
     #:description "right-hand side of BNF rule"
     #:attributes (name def)
@@ -47,19 +63,7 @@
              #:attr def #f)
     (pattern (t:id f₁ f₂ #:ad-hoc)
              #:attr name #'t
-             #:attr def
-             (syntax-parse #'(f₁ f₂)
-               [f:flds
-                (syntax-parse (attribute f.gen)
-                  [([x₁ _ T₁] [x₂ _ T₂])
-                   (with-syntax ([t-x₁ (format-id #'x₁ "~a-~a" #'t #'x₁)]
-                                 [t-x₂ (format-id #'x₂ "~a-~a" #'t #'x₂)]
-                                 [mk-t (format-id #'t  "mk-~a" #'t)])
-                     #'(begin
-                         (define-type t (Pairof T₁ T₂))
-                         (define mk-t (ann cons (T₁ T₂ → t)))
-                         (define t-x₁ (ann car (t → T₁)))
-                         (define t-x₂ (ann cdr (t → T₂)))))])]))
+             #:attr def (gen-ad-hoc-pair-defns #'t #'t #'f₁ #'f₂))
     (pattern (s:id f ...)
              #:attr name #'s
              #:attr def
@@ -117,3 +121,9 @@
     [(_ τ e) (with-syntax ([τ? (format-id #'τ "~a?" #'τ)])
                #'(begin (define-type τ e)
                         (define-predicate τ? τ)))]))
+
+(define-syntax ≜
+  (syntax-parser
+    [(t:id . _ . (k:id l:expr r:expr) #:ad-hoc)
+     (gen-ad-hoc-pair-defns #'t #'k #'l #'r)]
+    [(lhs . _ . rhs) #'(define-type lhs rhs)]))
