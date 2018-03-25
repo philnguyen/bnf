@@ -11,6 +11,10 @@
                      racket/syntax
                      syntax/parse
                      racket/pretty)
+         (for-meta 1 ; I'm confused. Thought `2` but `1` worked.
+                   racket/base
+                   syntax/transformer)
+         racket/match
          racket/string
          racket/pretty
          typed/racket/unsafe
@@ -32,7 +36,7 @@
                  (λ (_) 'K)
                  struct->list)))
 
-(begin-for-syntax
+(begin-for-syntax 
   (define (gen-ad-hoc-pair-defns t k f₁ f₂)
     (syntax-parse #`(#,f₁ #,f₂)
       [f:flds
@@ -45,7 +49,10 @@
                                   k)])
             #`(begin
                 (define-type #,t (Pairof T₁ T₂))
-                (define mk-t (ann cons (T₁ T₂ → #,t)))
+                (define-match-expander mk-t
+                  (syntax-rules ()
+                    [(_ x y) (cons x y)])
+                  (make-variable-like-transformer #'(ann cons (T₁ T₂ → #,t))))
                 (define t-x₁ (ann car (#,t → T₁)))
                 (define t-x₂ (ann cdr (#,t → T₂)))))])]))
   

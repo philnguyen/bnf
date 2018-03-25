@@ -88,3 +88,6 @@
 (define p (mk-pair number->string (compose1 string->symbol number->string)))
 (check-equal? ((My-Function-Pair-_0 p) 42) "42")
 (check-equal? ((My-Function-Pair-_1 p) 42) '|42|)
+(match-let ([(mk-pair f g)
+             (mk-pair number->string (compose string->symbol number->string))])
+  (values f g))
