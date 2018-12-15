@@ -2,6 +2,7 @@
 
 (provide ::=
          ≜
+         ≗
          (rename-out [::= ⩴])
          define-substructs)
 
@@ -134,3 +135,5 @@
     [(t:id . _ . (k:id l:expr r:expr) #:ad-hoc)
      (gen-ad-hoc-pair-defns #'t #'k #'l #'r)]
     [(lhs . _ . rhs) #'(define-type lhs rhs)]))
+
+(define-simple-macro (lhs . ≗ . rhs) (define-new-subtype lhs rhs))

@@ -91,3 +91,6 @@
 (match-let ([(mk-pair f g)
              (mk-pair number->string (compose string->symbol number->string))])
   (values f g))
+
+(New-Int . ≗ . (New-Int-Of Integer))
+(check-equal? (New-Int-Of 42) 42)
